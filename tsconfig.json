@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    "strict": true,
+
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    "resolveJsonModule": true,
+
+    "skipLibCheck": true,
+
+    "forceConsistentCasingInFileNames": true,
+
+    "sourceMap": true,
+
+    "baseUrl": "./src",
+
+    "paths": {
+      "@config/*": ["config/*"],
+      "@modules/*": ["modules/*"],
+      "@services/*": ["services/*"],
+      "@middleware/*": ["middleware/*"],
+      "@database/*": ["database/*"],
+      "@utils/*": ["utils/*"],
+      "@helpers/*": ["helpers/*"],
+      "@types/*": ["types/*"],
+      "@validators/*": ["validators/*"],
+      "@ai/*": ["ai/*"],
+      "@algorithms/*": ["algorithms/*"],
+      "@sockets/*": ["sockets/*"],
+      "@jobs/*": ["jobs/*"]
+    }
+  },
+
+  "include": ["src"],
+
+  "exclude": ["node_modules", "dist"]
+}
