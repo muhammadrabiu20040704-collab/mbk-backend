@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
 
-export const healthCheck = (
-  req: Request,
-  res: Response
-): void => {
+export const healthCheck = (req: Request, res: Response): void => {
   res.status(200).json({
     success: true,
     message: "MBK Backend is running 🚀",
@@ -12,6 +9,6 @@ export const healthCheck = (
 
     environment: process.env.NODE_ENV,
 
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 };
