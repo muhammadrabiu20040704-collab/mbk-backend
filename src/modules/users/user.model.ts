@@ -1,9 +1,12 @@
 import { Schema, model } from "mongoose";
 import { IUser } from "./user.types.js";
+import bcrypt from "bcrypt";
+import { AuthProvider, UserRole } from "./user.enums.js";
+import { env } from "../../config/env.js";
 
 const userSchema = new Schema<IUser>(
   {
-    fullname: {
+    fullName: {
       type: String,
       required: true,
       trim: true,
@@ -15,10 +18,15 @@ const userSchema = new Schema<IUser>(
       trim: true,
       lowercase: true,
     },
-    email: {
+    phoneNumber: {
       type: String,
       required: true,
       unique: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      default: "",
       trim: true,
       lowercase: true,
     },
@@ -28,13 +36,14 @@ const userSchema = new Schema<IUser>(
     },
     provider: {
       type: String,
-      enum: ["local", "google"],
-      default: "local",
+      enum: Object.values(AuthProvider),
+      default: AuthProvider.LOCAL,
     },
+
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      enum: Object.values(UserRole),
+      default: UserRole.USER,
     },
     profilePicture: {
       type: String,
@@ -49,28 +58,28 @@ const userSchema = new Schema<IUser>(
       default: "",
       maxLength: 250,
     },
-    follwersCount: {
-      type: String,
+    followersCount: {
+      type: Number,
       default: 0,
     },
     followingCount: {
-      type: String,
+      type: Number,
       default: 0,
     },
     postsCount: {
-      type: String,
+      type: Number,
       default: 0,
     },
-    presentationCount: {
-      type: String,
+    presentationsCount: {
+      type: Number,
       default: 0,
     },
-    debateCount: {
-      type: String,
+    debatesCount: {
+      type: Number,
       default: 0,
     },
     coins: {
-      type: String,
+      type: Number,
       default: 0,
     },
     isActive: {
@@ -81,8 +90,28 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    phoneNumberVerified: {
+      type: Boolean,
+      default: false,
+    },
+    interests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Category",
+      },
+    ],
   },
   { timestamps: true },
 );
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) {
+    return;
+  }
+  this.password = await bcrypt.hash(this.password, env.BCRYPT_SALT_ROUNDS);
+});
+
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 export const User = model<IUser>("User", userSchema);

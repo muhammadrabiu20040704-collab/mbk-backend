@@ -32,4 +32,6 @@ export const env = {
   RABBITMQ_URL: process.env.RABBITMQ_URL || "amqp://localhost",
 
   CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
+
+  BCRYPT_SALT_ROUNDS: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
 };
