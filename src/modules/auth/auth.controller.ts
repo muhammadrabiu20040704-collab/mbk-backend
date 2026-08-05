@@ -21,6 +21,13 @@ class AuthController {
       data: result,
     });
   }
+  async me(req: Request, res: Response) {
+    res.status(200).json({
+      success: true,
+      message: "Authenticated user",
+      data: req.user,
+    });
+  }
 }
 
 export const authController = new AuthController();

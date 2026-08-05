@@ -3,6 +3,8 @@ import { RegisterInput, LoginInput } from "./auth.types.js";
 import { AppError } from "../../utils/app-error.js";
 import bcrypt from "bcrypt";
 import { normalizePhoneNumber } from "../../shared/phone/phone.util.js";
+import { jwtService } from "../../shared/jwt/jwt.service.js";
+
 export class AuthService {
   async register(data: RegisterInput) {
     const { fullName, username, password, country } = data;
@@ -68,11 +70,18 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new AppError("Invalid credentials", 401);
     }
-    return {
-      id: user._id.toString(),
-      fullName: user.fullName,
+    const accessToken = jwtService.generateAccessToken({
+      sub: user._id.toString(),
       username: user.username,
-      phoneNumber: user.phoneNumber,
+    });
+    return {
+      user: {
+        id: user._id.toString(),
+        fullName: user.fullName,
+        username: user.username,
+        phoneNumber: user.phoneNumber,
+      },
+      accessToken,
     };
   }
 }

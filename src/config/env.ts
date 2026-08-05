@@ -19,7 +19,7 @@ export const env = {
 
   JWT_SECRET: required(process.env.JWT_SECRET, "JWT_SECRET"),
 
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
+  JWT_EXPIRES_IN: (process.env.JWT_EXPIRES_IN as SignOptions["expiresIn"]) || "7d",
 
   REDIS_URL: process.env.REDIS_URL || "redis://127.0.0.1:6379",
 
