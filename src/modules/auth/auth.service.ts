@@ -112,13 +112,47 @@ export class AuthService {
     try {
       const payload = jwtService.verifyRefreshToken(refreshToken);
 
-      const accessToken = jwtService.generateAccessToken({
+      const tokenHash = this.hashToken(refreshToken);
+
+      const session = await Session.findOne({
+        tokenHash,
+      });
+
+      if (!session) {
+        throw new AppError("Invalid refresh token", 401);
+      }
+
+      if (session.revokedAt) {
+        throw new AppError("Session has been revoked", 401);
+      }
+
+      if (session.expiresAt <= new Date()) {
+        throw new AppError("Session has expired", 401);
+      }
+
+      if (session.userId.toString() !== payload.sub) {
+        throw new AppError("Invalid session", 401);
+      }
+
+      const newAccessToken = jwtService.generateAccessToken({
         sub: payload.sub,
         username: payload.username,
       });
 
+      const newRefreshToken = jwtService.generateRefreshToken({
+        sub: payload.sub,
+        username: payload.username,
+      });
+
+      const newTokenHash = this.hashToken(newRefreshToken);
+
+      session.tokenHash = newTokenHash;
+
+      await session.save();
+
       return {
-        accessToken,
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
       };
     } catch {
       throw new AppError("Invalid refresh token", 401);
