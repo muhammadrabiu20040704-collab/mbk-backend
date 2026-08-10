@@ -4,6 +4,8 @@ import { AppError } from "../../utils/app-error.js";
 import bcrypt from "bcrypt";
 import { normalizePhoneNumber } from "../../shared/phone/phone.util.js";
 import { jwtService } from "../../shared/jwt/jwt.service.js";
+import crypto from "node:crypto";
+import { Session } from "./session.model.js";
 
 export class AuthService {
   async register(data: RegisterInput) {
@@ -45,8 +47,9 @@ export class AuthService {
     };
   }
 
-  async login(data: LoginInput) {
-    const { identifier, password } = data;
+  async login(data: LoginInput, metadata: { ipAddress: string; userAgent: string }) {
+    const { identifier, password, deviceId, deviceName } = data;
+    const { ipAddress, userAgent } = metadata;
 
     let normalizedPhoneNumber: string | null;
 
@@ -74,6 +77,25 @@ export class AuthService {
       sub: user._id.toString(),
       username: user.username,
     });
+
+    const refreshToken = jwtService.generateRefreshToken({
+      sub: user._id.toString(),
+      username: user.username,
+    });
+
+    const tokenHash = this.hashToken(refreshToken);
+
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    await Session.create({
+      userId: user._id,
+      tokenHash,
+      deviceId,
+      deviceName,
+      ipAddress,
+      userAgent,
+      expiresAt,
+    });
     return {
       user: {
         id: user._id.toString(),
@@ -82,7 +104,29 @@ export class AuthService {
         phoneNumber: user.phoneNumber,
       },
       accessToken,
+      refreshToken,
     };
+  }
+
+  async refresh(refreshToken: string) {
+    try {
+      const payload = jwtService.verifyRefreshToken(refreshToken);
+
+      const accessToken = jwtService.generateAccessToken({
+        sub: payload.sub,
+        username: payload.username,
+      });
+
+      return {
+        accessToken,
+      };
+    } catch {
+      throw new AppError("Invalid refresh token", 401);
+    }
+  }
+
+  private hashToken(token: string): string {
+    return crypto.createHash("sha256").update(token).digest("hex");
   }
 }
 export const authService = new AuthService();

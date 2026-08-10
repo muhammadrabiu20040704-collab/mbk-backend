@@ -13,7 +13,10 @@ class AuthController {
   }
 
   async login(req: Request, res: Response) {
-    const result = await authService.login(req.body);
+    const result = await authService.login(req.body, {
+      ipAddress: req.ip ?? "unknown",
+      userAgent: req.get("user-agent") ?? "unknown",
+    });
 
     res.status(200).json({
       success: true,
@@ -21,6 +24,19 @@ class AuthController {
       data: result,
     });
   }
+
+  async refresh(req: Request, res: Response) {
+    const { refreshToken } = req.body;
+
+    const result = await authService.refresh(refreshToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully",
+      data: result,
+    });
+  }
+
   async me(req: Request, res: Response) {
     res.status(200).json({
       success: true,

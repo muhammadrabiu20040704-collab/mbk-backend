@@ -11,4 +11,10 @@ export interface RegisterInput {
 export interface LoginInput {
   identifier: string;
   password: string;
+  deviceId: string;
+  deviceName: string;
+}
+
+export interface RefreshTokenInput {
+  refreshToken: string;
 }

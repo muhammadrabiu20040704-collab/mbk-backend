@@ -62,8 +62,14 @@ export const loginSchema = z.object({
     .max(100, {
       message: "Password must not exceed 100 characters.",
     }),
+  deviceId: z.string().trim().min(1),
+  deviceName: z.string().trim().min(1),
 });
 
+// Refresh Token
+export const refreshSchema = z.object({
+  refreshToken: z.string().min(1, "Refresh token is required."),
+});
 // Forgot Password
 export const forgotPasswordSchema = z.object({});
 
