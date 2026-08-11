@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { authService } from "./auth.service.js";
+import { AppError } from "../../utils/app-error.js";
 import { success } from "zod";
 
 class AuthController {
@@ -70,6 +71,21 @@ class AuthController {
       success: true,
       message: "Sessions retrieved successfully",
       data: sessions,
+    });
+  }
+
+  async revokeSession(req: Request, res: Response) {
+    const { sessionId } = req.params;
+
+    if (typeof sessionId !== "string") {
+      throw new AppError("Invalid session ID", 400);
+    }
+
+    await authService.revokeSession(sessionId, req.user!.sub);
+
+    res.status(200).json({
+      success: true,
+      message: "Session revoked successfully",
     });
   }
 }

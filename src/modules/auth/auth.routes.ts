@@ -13,5 +13,6 @@ authRouter.get("/me", authMiddleware, authController.me);
 authRouter.post("/logout", authController.logout);
 authRouter.post("/logout-all", authController.logoutAll);
 authRouter.get("/sessions", authMiddleware, authController.getSessions);
+authRouter.delete("/sessions/:sessionId", authMiddleware, authController.revokeSession);
 
 export default authRouter;

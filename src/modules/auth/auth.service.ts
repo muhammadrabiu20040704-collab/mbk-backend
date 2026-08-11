@@ -214,5 +214,21 @@ export class AuthService {
 
     return sessions;
   }
+
+  async revokeSession(sessionId: string, userId: string) {
+    const session = await Session.findOne({
+      _id: sessionId,
+      userId,
+      revokedAt: null,
+    });
+
+    if (!session) {
+      throw new AppError("Session not found", 404);
+    }
+
+    session.revokedAt = new Date();
+
+    await session.save();
+  }
 }
 export const authService = new AuthService();
