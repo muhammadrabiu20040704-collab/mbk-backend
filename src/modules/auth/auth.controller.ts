@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { authService } from "./auth.service.js";
+import { success } from "zod";
 
 class AuthController {
   async register(req: Request, res: Response) {
@@ -44,6 +45,32 @@ class AuthController {
       data: req.user,
     });
   }
-}
 
+  async logout(req: Request, res: Response) {
+    await authService.logout(req.body.refreshToken);
+    res.status(200).json({
+      success: true,
+      message: "Logout successful",
+    });
+  }
+
+  async logoutAll(req: Request, res: Response) {
+    const result = await authService.logoutAll(req.body.refreshToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Logged out from all devices",
+      data: result,
+    });
+  }
+  async getSessions(req: Request, res: Response) {
+    const sessions = await authService.getSessions(req.user!.sub);
+
+    res.status(200).json({
+      success: true,
+      message: "Sessions retrieved successfully",
+      data: sessions,
+    });
+  }
+}
 export const authController = new AuthController();

@@ -158,9 +158,61 @@ export class AuthService {
       throw new AppError("Invalid refresh token", 401);
     }
   }
-
   private hashToken(token: string): string {
     return crypto.createHash("sha256").update(token).digest("hex");
+  }
+  async logout(refreshToken: string) {
+    const tokenHash = this.hashToken(refreshToken);
+
+    const session = await Session.findOne({
+      tokenHash,
+    });
+
+    if (!session) {
+      throw new AppError("invalid refresh token", 401);
+    }
+    if (session.revokedAt) {
+      throw new AppError("Session Already Revoked", 401);
+    }
+
+    session.revokedAt = new Date();
+
+    await session.save();
+  }
+
+  async logoutAll(refreshToken: string) {
+    try {
+      const payload = jwtService.verifyRefreshToken(refreshToken);
+
+      const result = await Session.updateMany(
+        {
+          userId: payload.sub,
+          revokedAt: null,
+        },
+        {
+          $set: {
+            revokedAt: new Date(),
+          },
+        },
+      );
+
+      return {
+        revokedSessions: result.modifiedCount,
+      };
+    } catch {
+      throw new AppError("Invalid refresh token", 401);
+    }
+  }
+  async getSessions(userId: string) {
+    const sessions = await Session.find({
+      userId,
+      revokedAt: null,
+      expiresAt: { $gt: new Date() },
+    })
+      .select("_id deviceId deviceName ipAddress userAgent createdAt expiresAt revokedAt")
+      .sort({ createdAt: -1 });
+
+    return sessions;
   }
 }
 export const authService = new AuthService();
