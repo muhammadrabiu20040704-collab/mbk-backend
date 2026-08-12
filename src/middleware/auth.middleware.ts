@@ -20,7 +20,6 @@ export const authMiddleware = (req: Request, _res: Response, next: NextFunction)
   }
 
   const payload = jwtService.verifyAccessToken(token);
-  console.log(payload);
   req.user = payload;
   next();
 };

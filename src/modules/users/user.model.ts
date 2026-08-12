@@ -39,12 +39,6 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(AuthProvider),
       default: AuthProvider.LOCAL,
     },
-
-    role: {
-      type: String,
-      enum: Object.values(UserRole),
-      default: UserRole.USER,
-    },
     profilePicture: {
       type: String,
       default: "",
@@ -100,6 +94,12 @@ const userSchema = new Schema<IUser>(
         ref: "Category",
       },
     ],
+    role: {
+      type: String,
+      enum: Object.values(UserRole),
+      default: UserRole.USER,
+      index: true,
+    },
   },
   { timestamps: true },
 );

@@ -6,6 +6,7 @@ import { errorMiddleware } from "./middleware/error.middleware.js";
 import { notFoundMiddleware } from "@middleware/not-found.middleware.js";
 
 import { authRouter } from "@modules/auth/auth.routes.js";
+import userRouter from "@modules/users/user.routes.js";
 
 export const app = express();
 
@@ -15,7 +16,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/health", healthRouter);
+
 app.use(`${API_PREFIX}/auth`, authRouter);
+app.use(`${API_PREFIX}/users`, userRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { authService } from "./auth.service.js";
 import { AppError } from "../../utils/app-error.js";
-import { success } from "zod";
 
 class AuthController {
   async register(req: Request, res: Response) {
