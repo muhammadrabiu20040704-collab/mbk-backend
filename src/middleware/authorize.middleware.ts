@@ -22,7 +22,11 @@ export const authorize = (permission: Permission) => {
 
     const permissions = ROLE_PERMISSIONS[user.role];
 
-    if (!permissions?.includes(permission)) {
+    if (!permissions) {
+      throw new AppError("Invalid user role", 403);
+    }
+
+    if (!permissions.includes(permission)) {
       throw new AppError("Forbidden", 403);
     }
 

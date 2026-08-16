@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
-import { authService } from "./auth.service.js";
 import { AppError } from "../../utils/app-error.js";
+import { authService } from "./auth.service.js";
+import { ForgotPasswordInput } from "./auth.types.js";
+
+type ChangePasswordInput = Parameters<typeof authService.changePassword>[1];
 
 class AuthController {
   async register(req: Request, res: Response) {
@@ -87,5 +90,52 @@ class AuthController {
       message: "Session revoked successfully",
     });
   }
+
+  async changePassword(req: Request, res: Response) {
+    if (!req.user) {
+      throw new AppError("Unauthorized", 401);
+    }
+
+    const data = req.body as ChangePasswordInput;
+
+    await authService.changePassword(req.user.sub, data);
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  }
+
+  async forgotPassword(req: Request, res: Response) {
+    const { identifier, channel } = req.body as ForgotPasswordInput;
+
+    await authService.forgotPassword(identifier, channel);
+
+    return res.status(200).json({
+      success: true,
+      message: "If the account exists, a password reset OTP has been sent.",
+    });
+  }
+
+  async resetPassword(req: Request, res: Response) {
+    const result = await authService.resetPassword(req.body);
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+      data: result,
+    });
+  }
+
+  async verifyResetOTP(req: Request, res: Response) {
+    const result = await authService.verifyResetOTP(req.body);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+      data: result,
+    });
+  }
 }
+
 export const authController = new AuthController();

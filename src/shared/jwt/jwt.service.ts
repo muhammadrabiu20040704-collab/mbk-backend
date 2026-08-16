@@ -5,32 +5,41 @@ import type { JwtPayload } from "./jwt.types.js";
 import { z } from "zod";
 
 const jwtPayloadSchema = z.object({
-  sub: z.string(),
-  username: z.string(),
+  sub: z.string().min(1),
+  username: z.string().min(1),
 });
 
 export class JwtService {
   generateAccessToken(payload: JwtPayload) {
-    return jwt.sign(payload, env.JWT_SECRET as string, {
+    return jwt.sign(payload, env.JWT_SECRET, {
       expiresIn: env.JWT_EXPIRES_IN,
     });
   }
+
   generateRefreshToken(payload: JwtPayload) {
     return jwt.sign(payload, env.JWT_SECRET, {
       expiresIn: "30d",
     });
   }
+
   verifyAccessToken(token: string): JwtPayload {
     try {
-      return jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+      const decoded = jwt.verify(token, env.JWT_SECRET);
+
+      return jwtPayloadSchema.parse(decoded);
     } catch {
       throw new AppError("Unauthorized", 401);
     }
   }
-  verifyRefreshToken(token: string): JwtPayload {
-    const decoded = jwt.verify(token, env.JWT_SECRET);
 
-    return jwtPayloadSchema.parse(decoded);
+  verifyRefreshToken(token: string): JwtPayload {
+    try {
+      const decoded = jwt.verify(token, env.JWT_SECRET);
+
+      return jwtPayloadSchema.parse(decoded);
+    } catch {
+      throw new AppError("Unauthorized", 401);
+    }
   }
 }
 

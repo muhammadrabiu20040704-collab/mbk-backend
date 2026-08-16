@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import type { SignOptions } from "jsonwebtoken";
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ function required(value: string | undefined, name: string): string {
 export const env = {
   PORT: Number(process.env.PORT) || 5000,
 
-  NODE_ENV: process.env.NODE_ENV || "development",
+  NODE_ENV: process.env.NODE_ENV === "production" ? "production" : "development",
 
   MONGODB_URI: required(process.env.MONGODB_URI, "MONGODB_URI"),
 

@@ -6,6 +6,10 @@ import { normalizePhoneNumber } from "../../shared/phone/phone.util.js";
 import { jwtService } from "../../shared/jwt/jwt.service.js";
 import crypto from "node:crypto";
 import { Session } from "./session.model.js";
+import { ChangePasswordInput, VerifyResetOTPInput } from "./auth.types.js";
+import { PasswordResetOTP } from "./password-reset-otp.model.js";
+import { ResetPasswordInput, PasswordResetChannel } from "./auth.types.js";
+import { emailService } from "../../shared/email/email.service.js";
 
 export class AuthService {
   async register(data: RegisterInput) {
@@ -229,6 +233,200 @@ export class AuthService {
     session.revokedAt = new Date();
 
     await session.save();
+  }
+
+  async changePassword(userId: string, data: ChangePasswordInput) {
+    const { currentPassword, newPassword } = data;
+
+    const user = await User.findById(userId).select("+password");
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (!user.isActive) {
+      throw new AppError("Account is inactive", 403);
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isCurrentPasswordValid) {
+      throw new AppError("Current password is incorrect", 401);
+    }
+
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
+    if (isSamePassword) {
+      throw new AppError("New password must be different from current password", 400);
+    }
+
+    user.password = newPassword;
+
+    await user.save();
+
+    await Session.updateMany(
+      {
+        userId: user._id,
+        revokedAt: null,
+      },
+      {
+        $set: {
+          revokedAt: new Date(),
+        },
+      },
+    );
+
+    return {
+      message: "Password changed successfully",
+    };
+  }
+
+  async forgotPassword(identifier: string, channel: PasswordResetChannel) {
+    const user = await User.findOne({
+      $or: [
+        { username: identifier.toLowerCase() },
+        { email: identifier.toLowerCase() },
+        { phoneNumber: identifier },
+      ],
+    });
+
+    // Generic response for security.
+    if (!user) {
+      return;
+    }
+
+    // Remove previous unused OTPs.
+    await PasswordResetOTP.deleteMany({
+      userId: user._id,
+      usedAt: null,
+    });
+
+    // Generate exactly 6 digits.
+    const otp = crypto.randomInt(100000, 1000000).toString();
+
+    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+    // 3 minutes expiry.
+    const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
+
+    await PasswordResetOTP.create({
+      userId: user._id,
+      otpHash,
+      channel,
+      expiresAt,
+    });
+
+    if (channel === "email" && user.email) {
+      await emailService.sendPasswordResetOTP({
+        to: user.email,
+        otp,
+      });
+    }
+
+    // TODO:
+    // Send OTP through SMS or Email.
+    // Never return OTP in production.
+  }
+
+  async verifyResetOTP(data: VerifyResetOTPInput) {
+    const { identifier, otp } = data;
+
+    const user = await User.findOne({
+      $or: [
+        { username: identifier.toLowerCase() },
+        { email: identifier.toLowerCase() },
+        { phoneNumber: identifier },
+      ],
+    });
+
+    // Generic response for security
+    if (!user) {
+      throw new AppError("Invalid or expired OTP", 400);
+    }
+
+    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+    const resetOTP = await PasswordResetOTP.findOne({
+      userId: user._id,
+      otpHash,
+      usedAt: null,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!resetOTP) {
+      throw new AppError("Invalid or expired OTP", 400);
+    }
+
+    resetOTP.verifiedAt = new Date();
+
+    await resetOTP.save();
+
+    return {
+      verified: true,
+    };
+  }
+
+  async resetPassword(data: ResetPasswordInput) {
+    const { identifier, newPassword } = data;
+
+    const user = await User.findOne({
+      $or: [
+        { username: identifier.toLowerCase() },
+        { email: identifier.toLowerCase() },
+        { phoneNumber: identifier },
+      ],
+    }).select("+password");
+
+    if (!user) {
+      throw new AppError("Invalid or expired password reset request", 400);
+    }
+
+    if (!user.isActive) {
+      throw new AppError("Account is inactive", 403);
+    }
+
+    const resetOTP = await PasswordResetOTP.findOne({
+      userId: user._id,
+      usedAt: null,
+      verifiedAt: { $ne: null },
+      expiresAt: { $gt: new Date() },
+    }).sort({ createdAt: -1 });
+
+    if (!resetOTP) {
+      throw new AppError("OTP verification required or expired", 400);
+    }
+
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
+    if (isSamePassword) {
+      throw new AppError("New password must be different from current password", 400);
+    }
+
+    // userSchema.pre("save") zai hash password.
+    user.password = newPassword;
+
+    await user.save();
+
+    // OTP is now consumed.
+    resetOTP.usedAt = new Date();
+    await resetOTP.save();
+
+    // Revoke all existing sessions.
+    await Session.updateMany(
+      {
+        userId: user._id,
+        revokedAt: null,
+      },
+      {
+        $set: {
+          revokedAt: new Date(),
+        },
+      },
+    );
+
+    return {
+      message: "Password reset successfully",
+    };
   }
 }
 export const authService = new AuthService();

@@ -1,7 +1,15 @@
 import { Router } from "express";
 import { authController } from "./auth.controller.js";
 import { validateRequest } from "@middleware/validation.middleware.js";
-import { registerSchema, loginSchema, refreshSchema } from "./auth.validation.js";
+import {
+  registerSchema,
+  loginSchema,
+  refreshSchema,
+  changePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  verifyResetOTPSchema,
+} from "./auth.validation.js";
 import { authMiddleware } from "../../middleware/auth.middleware.js";
 import { authorize } from "../../middleware/authorize.middleware.js";
 import { Permission } from "../users/permission.enum.js";
@@ -21,5 +29,28 @@ authRouter.get(
   authController.getSessions,
 );
 authRouter.delete("/sessions/:sessionId", authMiddleware, authController.revokeSession);
+authRouter.patch(
+  "/change-password",
+  authMiddleware,
+  validateRequest(changePasswordSchema),
+  authController.changePassword,
+);
+authRouter.post(
+  "/forgot-password",
+  validateRequest(forgotPasswordSchema),
+  authController.forgotPassword,
+);
+
+authRouter.post(
+  "/reset-password",
+  validateRequest(resetPasswordSchema),
+  authController.resetPassword,
+);
+
+authRouter.post(
+  "/verify-reset-otp",
+  validateRequest(verifyResetOTPSchema),
+  authController.verifyResetOTP,
+);
 
 export default authRouter;

@@ -18,3 +18,27 @@ export interface LoginInput {
 export interface RefreshTokenInput {
   refreshToken: string;
 }
+
+export interface ChangePasswordInput {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export type PasswordResetChannel = "sms" | "email";
+
+export interface ForgotPasswordInput {
+  identifier: string;
+  channel: PasswordResetChannel;
+}
+
+export interface ResetPasswordInput {
+  identifier: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface VerifyResetOTPInput {
+  identifier: string;
+  otp: string;
+}

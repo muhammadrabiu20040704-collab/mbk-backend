@@ -17,7 +17,10 @@ export class UserController {
     const { role } = req.body;
     const validatedRole = validateUserRole(role);
 
-    const result = await roleManagementService.changeUserRole(userId, validatedRole, req.user.sub);
+    const result = await roleManagementService.changeUserRole(userId, validatedRole, req.user.sub, {
+      ipAddress: req.ip ?? "unknow",
+      userAgent: req.get("user-agent") ?? "unknown",
+    });
 
     return res.status(200).json({
       success: true,

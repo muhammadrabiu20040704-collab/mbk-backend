@@ -9,17 +9,21 @@ export const authMiddleware = (req: Request, _res: Response, next: NextFunction)
     throw new AppError("Unauthorized", 401);
   }
 
-  const [scheme, token] = authHeader.trim().split(/\s+/);
+  const parts = authHeader.trim().split(/\s+/);
 
-  if (scheme !== "Bearer") {
+  if (parts.length !== 2) {
     throw new AppError("Unauthorized", 401);
   }
 
-  if (!token) {
+  const [scheme, token] = parts;
+
+  if (scheme !== "Bearer" || !token) {
     throw new AppError("Unauthorized", 401);
   }
 
   const payload = jwtService.verifyAccessToken(token);
+
   req.user = payload;
+
   next();
 };
