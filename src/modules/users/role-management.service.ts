@@ -20,11 +20,11 @@ export class RoleManagementService {
 
     const targetUser = await User.findById(targetUserId);
 
-    const oldRole = targetUser.role;
-
     if (!targetUser) {
       throw new AppError("User not found", 404);
     }
+
+    const oldRole = targetUser.role;
 
     if (targetUser.role === newRole) {
       throw new AppError("User already has this role", 400);

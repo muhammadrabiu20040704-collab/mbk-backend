@@ -37,25 +37,25 @@ MBK uses token-based authentication.
 The authentication flow is:
 
 Client
-   │
-   ▼
+│
+▼
 Login
-   │
-   ▼
+│
+▼
 Validate Credentials
-   │
-   ▼
+│
+▼
 Generate Access Token
-   │
-   ├──────────────► Client
-   │
-   ▼
+│
+├──────────────► Client
+│
+▼
 Generate Refresh Token
-   │
-   ▼
+│
+▼
 Create Session
-   │
-   ▼
+│
+▼
 Store Hashed Refresh Token
 
 The client uses the access token when requesting protected resources.
@@ -134,15 +134,15 @@ BCRYPT_SALT_ROUNDS=10
 The User model hashes the password before saving:
 
 Plain Password
-      │
-      ▼
-   bcrypt
-      │
-      ▼
+│
+▼
+bcrypt
+│
+▼
 Hashed Password
-      │
-      ▼
-   MongoDB
+│
+▼
+MongoDB
 
 Password comparison is performed using bcrypt.
 
@@ -160,20 +160,20 @@ A user can authenticate using:
 The login process is:
 
 Identifier + Password
-        │
-        ▼
+│
+▼
 Normalize Identifier
-        │
-        ▼
+│
+▼
 Find User
-        │
-        ▼
+│
+▼
 Compare Password
-        │
-        ▼
+│
+▼
 Generate Tokens
-        │
-        ▼
+│
+▼
 Create Session
 
 Invalid credentials return:
@@ -183,8 +183,8 @@ Invalid credentials return:
 with a generic message:
 
 {
-  "success": false,
-  "message": "Invalid credentials"
+"success": false,
+"message": "Invalid credentials"
 }
 
 The system does not reveal whether the username or password was incorrect.
@@ -198,8 +198,8 @@ MBK uses JSON Web Tokens for authenticated requests.
 The access token contains:
 
 {
-  "sub": "userId",
-  "username": "username"
+"sub": "userId",
+"username": "username"
 }
 
 The "sub" field identifies the authenticated user.
@@ -235,8 +235,8 @@ Invalid authentication returns:
 Example:
 
 {
-  "success": false,
-  "message": "Unauthorized"
+"success": false,
+"message": "Unauthorized"
 }
 
 ---
@@ -254,14 +254,14 @@ Refresh tokens are not stored directly in the database.
 Instead, MBK hashes the refresh token using SHA-256:
 
 Refresh Token
-     │
-     ▼
-   SHA-256
-     │
-     ▼
+│
+▼
+SHA-256
+│
+▼
 Token Hash
-     │
-     ▼
+│
+▼
 Session Database
 
 This reduces the risk of exposing usable refresh tokens if the database is compromised.
@@ -303,9 +303,9 @@ This allows MBK to support multiple authenticated devices.
 Example:
 
 User
- ├── Phone
- ├── Laptop
- └── Tablet
+├── Phone
+├── Laptop
+└── Tablet
 
 Each device can have its own session.
 
@@ -330,10 +330,10 @@ The "logoutAll" functionality revokes all active sessions belonging to the authe
 Example:
 
 User
- ├── Phone      → Revoked
- ├── Laptop     → Revoked
- ├── Tablet     → Revoked
- └── Browser    → Revoked
+├── Phone → Revoked
+├── Laptop → Revoked
+├── Tablet → Revoked
+└── Browser → Revoked
 
 This is particularly useful after a suspected account compromise.
 
@@ -345,8 +345,7 @@ Users can revoke individual sessions.
 
 The backend verifies:
 
-sessionId
-+
+sessionId +
 authenticated userId
 
 This prevents a user from revoking another user's session.
@@ -395,8 +394,8 @@ The system intentionally returns a generic response.
 Example:
 
 {
-  "success": true,
-  "message": "If the account exists, a password reset OTP has been sent."
+"success": true,
+"message": "If the account exists, a password reset OTP has been sent."
 }
 
 This prevents account enumeration.
@@ -420,14 +419,14 @@ The OTP is never stored as plain text.
 Instead:
 
 OTP
- │
- ▼
+│
+▼
 SHA-256
- │
- ▼
+│
+▼
 OTP Hash
- │
- ▼
+│
+▼
 MongoDB
 
 ---
@@ -462,7 +461,7 @@ The OTP record stores the selected channel.
 Example:
 
 {
-  "channel": "email"
+"channel": "email"
 }
 
 The actual OTP delivery service is separated from the authentication logic.
@@ -476,34 +475,34 @@ This allows the system to support production email/SMS providers later without c
 The OTP verification process is:
 
 User Identifier
-      │
-      ▼
+│
+▼
 OTP
-      │
-      ▼
+│
+▼
 Hash OTP
-      │
-      ▼
+│
+▼
 Find OTP Record
-      │
-      ├── Invalid → Reject
-      ├── Expired → Reject
-      ├── Used → Reject
-      │
-      ▼
+│
+├── Invalid → Reject
+├── Expired → Reject
+├── Used → Reject
+│
+▼
 Mark OTP Verified
-      │
-      ▼
+│
+▼
 Allow Password Reset
 
 A successful verification returns:
 
 {
-  "success": true,
-  "message": "OTP verified successfully",
-  "data": {
-    "verified": true
-  }
+"success": true,
+"message": "OTP verified successfully",
+"data": {
+"verified": true
+}
 }
 
 ---
@@ -538,8 +537,8 @@ The backend:
 Successful response:
 
 {
-  "success": true,
-  "message": "Password reset successfully"
+"success": true,
+"message": "Password reset successfully"
 }
 
 ---
@@ -551,14 +550,14 @@ MBK implements RBAC.
 The major concept is:
 
 User
-  │
-  ▼
+│
+▼
 Role
-  │
-  ▼
+│
+▼
 Permissions
-  │
-  ▼
+│
+▼
 Protected Resource
 
 Instead of allowing every authenticated user to perform every operation, permissions are assigned according to the user's role.
@@ -590,8 +589,8 @@ If the permission is missing:
 Example:
 
 {
-  "success": false,
-  "message": "Forbidden"
+"success": false,
+"message": "Forbidden"
 }
 
 ---
@@ -607,8 +606,8 @@ The user is not properly authenticated.
 Example:
 
 {
-  "success": false,
-  "message": "Unauthorized"
+"success": false,
+"message": "Unauthorized"
 }
 
 403 — Forbidden
@@ -618,8 +617,8 @@ The user is authenticated but does not have permission.
 Example:
 
 {
-  "success": false,
-  "message": "Forbidden"
+"success": false,
+"message": "Forbidden"
 }
 
 This distinction makes the API behavior predictable.
@@ -635,8 +634,8 @@ An important security rule prevents a user from changing their own role.
 Example response:
 
 {
-  "success": false,
-  "message": "You cannot change your own role"
+"success": false,
+"message": "You cannot change your own role"
 }
 
 This prevents privilege escalation through self-role modification.
@@ -666,11 +665,11 @@ createdAt
 Example:
 
 {
-  "action": "change_user_role",
-  "oldValue": "admin",
-  "newValue": "user",
-  "ipAddress": "::1",
-  "userAgent": "PostmanRuntime/7.39.1"
+"action": "change_user_role",
+"oldValue": "admin",
+"newValue": "user",
+"ipAddress": "::1",
+"userAgent": "PostmanRuntime/7.39.1"
 }
 
 This provides traceability for sensitive operations.
@@ -777,8 +776,8 @@ Example:
 Unexpected errors return:
 
 {
-  "success": false,
-  "message": "Internal Server Error"
+"success": false,
+"message": "Internal Server Error"
 }
 
 Detailed internal errors are logged server-side rather than exposed to clients.
@@ -832,42 +831,42 @@ Important successful tests included:
 
 Authentication
 
-Login                         PASS
-Refresh token                 PASS
-Logout                        PASS
-Logout all                    PASS
-Session retrieval             PASS
-Session revocation            PASS
+Login PASS
+Refresh token PASS
+Logout PASS
+Logout all PASS
+Session retrieval PASS
+Session revocation PASS
 
 RBAC
 
-Unauthorized request          PASS
-Forbidden request             PASS
-Permission checking           PASS
-Role management               PASS
-Self-role-change protection   PASS
-Audit logging                 PASS
+Unauthorized request PASS
+Forbidden request PASS
+Permission checking PASS
+Role management PASS
+Self-role-change protection PASS
+Audit logging PASS
 
 Password Security
 
-Change password               PASS
-Current password validation   PASS
-Forgot password               PASS
-OTP generation                PASS
-OTP email delivery            PASS
-OTP verification              PASS
-OTP expiration                PASS
-Password reset                PASS
-New password login            PASS
+Change password PASS
+Current password validation PASS
+Forgot password PASS
+OTP generation PASS
+OTP email delivery PASS
+OTP verification PASS
+OTP expiration PASS
+Password reset PASS
+New password login PASS
 
 Security Hardening
 
-Helmet                        PASS
-CORS                          PASS
-Request size limit            PASS
-General rate limiting         PASS
-Authentication rate limiting  PASS
-JWT validation                PASS
+Helmet PASS
+CORS PASS
+Request size limit PASS
+General rate limiting PASS
+Authentication rate limiting PASS
+JWT validation PASS
 
 ---
 
@@ -925,18 +924,12 @@ Defense in Depth
 
 Security is implemented at multiple levels:
 
-Validation
-   +
-Authentication
-   +
-Authorization
-   +
-Session Security
-   +
-Rate Limiting
-   +
-HTTP Security
-   +
+Validation +
+Authentication +
+Authorization +
+Session Security +
+Rate Limiting +
+HTTP Security +
 Audit Logging
 
 Password Protection
@@ -1028,56 +1021,56 @@ The complete authentication architecture can be summarized as:
 42. Password Recovery Flow Summary
 
 User
- │
- ▼
+│
+▼
 Forgot Password
- │
- ▼
+│
+▼
 Identifier
- │
- ▼
+│
+▼
 Find Account
- │
- ├── Not Found ──► Generic Response
- │
- ▼
+│
+├── Not Found ──► Generic Response
+│
+▼
 Generate 6-Digit OTP
- │
- ▼
+│
+▼
 Hash OTP
- │
- ▼
+│
+▼
 Store OTP
- │
- ▼
+│
+▼
 Send Email/SMS
- │
- ▼
+│
+▼
 User Enters OTP
- │
- ▼
+│
+▼
 Verify OTP
- │
- ├── Invalid ──► Reject
- ├── Expired ──► Reject
- └── Used ─────► Reject
- │
- ▼
+│
+├── Invalid ──► Reject
+├── Expired ──► Reject
+└── Used ─────► Reject
+│
+▼
 Verified
- │
- ▼
+│
+▼
 New Password
- │
- ▼
+│
+▼
 Hash Password
- │
- ▼
+│
+▼
 Save Password
- │
- ▼
+│
+▼
 Invalidate/Update Reset State
- │
- ▼
+│
+▼
 Password Reset Successful
 
 ---
@@ -1086,22 +1079,22 @@ Password Reset Successful
 
 The authentication and security sprint has been completed.
 
-Authentication              COMPLETE
-RBAC                        COMPLETE
-Audit Logging               COMPLETE
-Password Change             COMPLETE
-Forgot Password             COMPLETE
-OTP Verification            COMPLETE
-Reset Password              COMPLETE
-Session Management          COMPLETE
-JWT Security                COMPLETE
-HTTP Security               COMPLETE
-Rate Limiting               COMPLETE
-Build                       COMPLETE
-ESLint                      COMPLETE
-Git Commit                  COMPLETE
-GitHub Push                 COMPLETE
-Documentation               COMPLETE
+Authentication COMPLETE
+RBAC COMPLETE
+Audit Logging COMPLETE
+Password Change COMPLETE
+Forgot Password COMPLETE
+OTP Verification COMPLETE
+Reset Password COMPLETE
+Session Management COMPLETE
+JWT Security COMPLETE
+HTTP Security COMPLETE
+Rate Limiting COMPLETE
+Build COMPLETE
+ESLint COMPLETE
+Git Commit COMPLETE
+GitHub Push COMPLETE
+Documentation COMPLETE
 
 Final Git Commit:
 

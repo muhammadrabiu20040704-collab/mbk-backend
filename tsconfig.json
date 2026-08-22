@@ -20,8 +20,8 @@
 
     "sourceMap": true,
 
-    "baseUrl": "./src",
     "ignoreDeprecations": "6.0",
+    "baseUrl": "./src",
 
     "paths": {
       "@config/*": ["config/*"],

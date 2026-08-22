@@ -4,43 +4,34 @@ import { CountryCode } from "libphonenumber-js";
 
 export interface IUser extends Document {
   fullName: string;
-
   username: string;
 
   country: CountryCode;
 
   phoneNumber: string;
-
   email?: string;
-
   password: string;
 
   provider: AuthProvider;
-
   role: UserRole;
 
   profilePicture: string;
-
   coverPhoto: string;
-
   bio: string;
 
+  school?: string;
+  department?: string;
+  level?: string;
+
   followersCount: number;
-
   followingCount: number;
-
   postsCount: number;
-
   presentationsCount: number;
-
   debatesCount: number;
-
   coins: number;
 
   isActive: boolean;
-
   isVerified: boolean;
-
   phoneNumberVerified: boolean;
 
   interests: Types.ObjectId[];
@@ -48,6 +39,5 @@ export interface IUser extends Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
 
   createdAt: Date;
-
   updatedAt: Date;
 }

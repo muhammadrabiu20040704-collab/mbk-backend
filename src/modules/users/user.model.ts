@@ -10,6 +10,7 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       trim: true,
+      immutable: true,
     },
     username: {
       type: String,
@@ -87,6 +88,28 @@ const userSchema = new Schema<IUser>(
     phoneNumberVerified: {
       type: Boolean,
       default: false,
+    },
+    country: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    school: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    department: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    level: {
+      type: String,
+      trim: true,
+      default: "",
     },
     interests: [
       {
