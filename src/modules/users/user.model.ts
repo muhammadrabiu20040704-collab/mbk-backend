@@ -27,9 +27,13 @@ const userSchema = new Schema<IUser>(
     },
     email: {
       type: String,
-      default: "",
       trim: true,
       lowercase: true,
+      required: true,
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
     },
     password: {
       type: String,
@@ -126,6 +130,19 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true },
 );
+userSchema.index(
+  { email: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      email: {
+        $type: "string",
+        $ne: "",
+      },
+    },
+  },
+);
+
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
     return;

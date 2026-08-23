@@ -13,7 +13,7 @@ import { emailService } from "../../shared/email/email.service.js";
 
 export class AuthService {
   async register(data: RegisterInput) {
-    const { fullName, username, password, country } = data;
+    const { fullName, username, password, country, email } = data;
 
     const normalizedPhoneNumber = normalizePhoneNumber(data.phoneNumber, data.country);
 
@@ -33,9 +33,18 @@ export class AuthService {
       throw new AppError("Username already exists", 409);
     }
 
+    const existingUserByEmail = await User.findOne({
+      email,
+    });
+
+    if (existingUserByEmail) {
+      throw new AppError("Email already exists", 409);
+    }
+
     const user = new User({
       fullName,
       username,
+      email,
       phoneNumber: normalizedPhoneNumber,
       password,
       country,

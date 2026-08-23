@@ -4,6 +4,7 @@ export interface RegisterInput {
   fullName: string;
   username: string;
   country: CountryCode;
+  email: string;
   phoneNumber: string;
   password: string;
 }

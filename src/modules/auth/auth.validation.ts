@@ -28,6 +28,10 @@ export const registerSchema = z
       message: "Phone number is required.",
     }),
 
+    email: z.string().trim().toLowerCase().email({
+      message: "Please provide a valid email address.",
+    }),
+
     password: z
       .string()
       .min(8, {

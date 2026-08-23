@@ -33,6 +33,7 @@ export interface IUser extends Document {
   isActive: boolean;
   isVerified: boolean;
   phoneNumberVerified: boolean;
+  emailVerified: boolean;
 
   interests: Types.ObjectId[];
 
