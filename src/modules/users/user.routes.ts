@@ -4,6 +4,7 @@ import { authorize } from "../../middleware/authorize.middleware.js";
 import { Permission } from "./permission.enum.js";
 import { userController } from "./user.controller.js";
 import profileRouter from "../profiles/profile.routes.js";
+import followRouter from "../follows/follow.routes.js";
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.patch(
 );
 
 router.use("/", profileRouter);
+router.use("/", followRouter);
 
 export default router;
