@@ -1,13 +1,15 @@
 import { ClientSession, Types, startSession } from "mongoose";
 import { Wallet } from "./wallet.model.js";
+import { WalletTransactionSource, WalletTransactionType } from "./wallet.enums.js";
+import { AppError } from "../../utils/app-error.js";
+import { WalletTransaction } from "./wallet-transaction.model.js";
 import {
   ICreditWalletInput,
   IDebitWalletInput,
   ITransferWalletInput,
   IGetTransactionsInput,
 } from "./wallet.types.js";
-import { WalletTransaction } from "./wallet-transaction.model.js";
-import { WalletTransactionSource, WalletTransactionType } from "./wallet.enums.js";
+
 class WalletService {
   async getOrCreateWallet(userId: Types.ObjectId, session?: ClientSession) {
     let wallet = await Wallet.findOne({ userId }).session(session ?? null);
@@ -35,11 +37,11 @@ class WalletService {
     const { userId, amount } = input;
 
     if (!Types.ObjectId.isValid(userId)) {
-      throw new Error("Invalid user ID");
+      throw new AppError("Invalid user ID", 400);
     }
 
     if (!Number.isInteger(amount) || amount <= 0) {
-      throw new Error("Coin amount must be a positive integer");
+      throw new AppError("Coin amount must be a positive integer", 400);
     }
 
     const existingTransaction = await WalletTransaction.findOne({
@@ -103,11 +105,11 @@ class WalletService {
     const { userId, amount } = input;
 
     if (!Types.ObjectId.isValid(userId)) {
-      throw new Error("Invalid user ID");
+      throw new AppError("Invalid user ID", 400);
     }
 
     if (!Number.isInteger(amount) || amount <= 0) {
-      throw new Error("Coin amount must be a positive integer");
+      throw new AppError("Coin amount must be a positive integer", 400);
     }
 
     const existingTransaction = await WalletTransaction.findOne({
@@ -127,7 +129,7 @@ class WalletService {
         const wallet = await this.getOrCreateWallet(userId, session);
 
         if (wallet.balance < amount) {
-          throw new Error("Insufficient wallet balance");
+          throw new AppError("Insufficient wallet balance", 400);
         }
 
         const balanceBefore = wallet.balance;
@@ -168,23 +170,23 @@ class WalletService {
     const { fromUserId, toUserId, amount } = input;
 
     if (!Types.ObjectId.isValid(fromUserId)) {
-      throw new Error("Invalid sender user ID");
+      throw new AppError("Invalid sender user ID", 400);
     }
 
     if (!Types.ObjectId.isValid(toUserId)) {
-      throw new Error("Invalid receiver user ID");
+      throw new AppError("Invalid receiver user ID", 400);
     }
 
     if (fromUserId.equals(toUserId)) {
-      throw new Error("Cannot transfer coins to yourself");
+      throw new AppError("Cannot transfer coins to yourself", 400);
     }
 
     if (!Number.isInteger(amount) || amount <= 0) {
-      throw new Error("Coin amount must be a positive integer");
+      throw new AppError("Coin amount must be a positive integer", 400);
     }
 
     const existingTransaction = await WalletTransaction.findOne({
-      idempotencyKey: input.idempotencyKey,
+      idempotencyKey: `${input.idempotencyKey}:debit`,
     });
 
     if (existingTransaction) {
@@ -202,7 +204,7 @@ class WalletService {
         const receiverWallet = await this.getOrCreateWallet(toUserId, session);
 
         if (senderWallet.balance < amount) {
-          throw new Error("Insufficient wallet balance");
+          throw new AppError("Insufficient wallet balance", 400);
         }
 
         const senderBalanceBefore = senderWallet.balance;
@@ -261,13 +263,13 @@ class WalletService {
 
   async getBalance(userId: Types.ObjectId) {
     if (!Types.ObjectId.isValid(userId)) {
-      throw new Error("Invalid user ID");
+      throw new AppError("Invalid user ID", 400);
     }
 
     const wallet = await Wallet.findOne({ userId }, { balance: 1 });
 
     if (!wallet) {
-      throw new Error("Wallet not found");
+      throw new AppError("Wallet not found", 400);
     }
 
     return wallet.balance;
@@ -277,7 +279,7 @@ class WalletService {
     const { userId, limit = 20, cursor } = input;
 
     if (!Types.ObjectId.isValid(userId)) {
-      throw new Error("Invalid user ID");
+      throw new AppError("Invalid user ID", 400);
     }
 
     const safeLimit = Math.min(Math.max(limit, 1), 50);
@@ -293,7 +295,7 @@ class WalletService {
       const cursorDate = new Date(cursor);
 
       if (Number.isNaN(cursorDate.getTime())) {
-        throw new Error("Invalid cursor");
+        throw new AppError("Invalid cursor", 400);
       }
 
       query.createdAt = {

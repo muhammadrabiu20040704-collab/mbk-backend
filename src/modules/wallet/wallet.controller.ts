@@ -70,8 +70,21 @@ class WalletController {
     }
 
     const userId = new Types.ObjectId(req.user.sub);
+
     const { amount, source, referenceId, idempotencyKey, description } = req.body;
-    const input = { userId, amount, source, referenceId, idempotencyKey, description };
+
+    if (!Number.isInteger(amount) || amount <= 0) {
+      throw new AppError("Invalid coin amount", 400);
+    }
+
+    const input = {
+      userId,
+      amount,
+      source,
+      referenceId,
+      idempotencyKey,
+      description,
+    };
 
     const transaction = await walletService.credit(input);
 
@@ -92,6 +105,9 @@ class WalletController {
 
     const userId = new Types.ObjectId(req.user.sub);
     const { amount, source, referenceId, idempotencyKey, description } = req.body;
+    if (!Number.isInteger(amount) || amount <= 0) {
+      throw new AppError("Invalid coin amount", 400);
+    }
     const input = { userId, amount, source, referenceId, idempotencyKey, description };
 
     const transaction = await walletService.debit(input);

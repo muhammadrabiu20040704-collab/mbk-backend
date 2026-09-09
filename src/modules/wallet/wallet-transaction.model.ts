@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
-import { IWalletTransaction } from "./wallet-transaction.types.js";
 import { WalletTransactionSource, WalletTransactionType } from "./wallet.enums.js";
+import type { IWalletTransaction } from "./wallet-transaction.types.js";
 
 const walletTransactionSchema = new Schema<IWalletTransaction>(
   {
@@ -21,6 +21,13 @@ const walletTransactionSchema = new Schema<IWalletTransaction>(
       type: String,
       enum: Object.values(WalletTransactionSource),
       required: true,
+    },
+
+    idempotencyKey: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
     },
 
     amount: {
@@ -50,25 +57,19 @@ const walletTransactionSchema = new Schema<IWalletTransaction>(
       ref: "User",
     },
 
-    idempotencyKey: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
-
     description: {
       type: String,
       trim: true,
       maxlength: 250,
     },
   },
-  {
-    timestamps: true,
-  },
+  { timestamps: true },
 );
 
-walletTransactionSchema.index({ userId: 1, createdAt: -1 });
+walletTransactionSchema.index({
+  userId: 1,
+  createdAt: -1,
+});
 
 walletTransactionSchema.index({
   userId: 1,

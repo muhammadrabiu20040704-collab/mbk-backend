@@ -10,6 +10,7 @@ import { generalRateLimiter, authRateLimiter } from "./middleware/rate-limit.mid
 
 import { authRouter } from "@modules/auth/auth.routes.js";
 import userRouter from "@modules/users/user.routes.js";
+import walletRouter from "@modules/wallet/wallet.routes.js";
 
 import { env } from "./config/env.js";
 
@@ -56,16 +57,11 @@ app.use(generalRateLimiter);
 app.use("/health", healthRouter);
 
 // ===============================
-// AUTH
+// ROUTES
 // ===============================
-
 app.use(`${API_PREFIX}/auth`, authRateLimiter, authRouter);
-
-// ===============================
-// USERS
-// ===============================
-
 app.use(`${API_PREFIX}/users`, userRouter);
+app.use(`${API_PREFIX}/wallet`, walletRouter);
 
 // ===============================
 // NOT FOUND
