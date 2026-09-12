@@ -24,3 +24,11 @@ export const profileImageUpload = multer({
     fileSize: 8 * 1024 * 1024,
   },
 });
+
+export const messageMediaUpload = multer({
+  storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024,
+    files: 1,
+  },
+});
