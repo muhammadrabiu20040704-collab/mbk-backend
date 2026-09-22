@@ -1,12 +1,18 @@
+import http from "node:http";
 import app from "./app.js";
 import { env } from "./config/env.js";
 import { connectDatabase } from "./database/connection.js";
+import { initializeSocket } from "./sockets/socket.server.js";
 
 async function startServer() {
   try {
     await connectDatabase();
 
-    app.listen(env.PORT, () => {
+    const httpServer = http.createServer(app);
+
+    initializeSocket(httpServer);
+
+    httpServer.listen(env.PORT, () => {
       console.log(`🚀 MBK Server running on port ${env.PORT}`);
     });
   } catch (error) {
