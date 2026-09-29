@@ -3,6 +3,8 @@ import type { UploadedMedia } from "../../shared/media/media.types.js";
 import { MessageStatus, MessageType } from "./messages.enums.js";
 
 export interface IMessage {
+  _id: Types.ObjectId;
+
   conversationId: Types.ObjectId;
   senderId: Types.ObjectId;
 

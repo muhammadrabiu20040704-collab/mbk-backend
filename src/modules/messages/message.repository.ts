@@ -4,7 +4,7 @@ import type { IMessage } from "./message.types.js";
 import { MessageStatus } from "./messages.enums.js";
 
 export class MessageRepository {
-  async create(data: Omit<IMessage, "createdAt" | "updatedAt">): Promise<IMessage> {
+  async create(data: Omit<IMessage, "_id" | "createdAt" | "updatedAt">): Promise<IMessage> {
     return Message.create(data);
   }
 

@@ -5,6 +5,9 @@ export const MEDIA_FOLDERS = {
   POST_IMAGES: "mbk/posts/images",
   POST_VIDEOS: "mbk/posts/videos",
 
+  MESSAGE_IMAGES: "mbk/messages/images",
+  MESSAGE_VIDEOS: "mbk/messages/videos",
+
   PRESENTATION_MEDIA: "mbk/presentations",
   DEBATE_MEDIA: "mbk/debates",
 } as const;

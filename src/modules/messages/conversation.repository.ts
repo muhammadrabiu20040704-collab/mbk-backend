@@ -24,6 +24,21 @@ export class ConversationRepository {
   ): Promise<IConversation> {
     return Conversation.create(data);
   }
+
+  async updateLastMessage(
+    conversationId: Types.ObjectId,
+    lastMessageId: Types.ObjectId,
+    lastMessageAt: Date,
+  ): Promise<IConversation | null> {
+    return Conversation.findByIdAndUpdate(
+      conversationId,
+      {
+        lastMessageId,
+        lastMessageAt,
+      },
+      { new: true },
+    ).exec();
+  }
 }
 
 export const conversationRepository = new ConversationRepository();
