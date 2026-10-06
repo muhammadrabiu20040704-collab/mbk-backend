@@ -23,8 +23,7 @@ export interface IUser extends Document {
   department?: string;
   level?: string;
 
-  followersCount: number;
-  followingCount: number;
+  connectionsCount: number;
   postsCount: number;
   presentationsCount: number;
   debatesCount: number;

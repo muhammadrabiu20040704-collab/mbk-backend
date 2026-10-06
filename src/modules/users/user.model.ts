@@ -57,11 +57,7 @@ const userSchema = new Schema<IUser>(
       default: "",
       maxLength: 250,
     },
-    followersCount: {
-      type: Number,
-      default: 0,
-    },
-    followingCount: {
+    connectionsCount: {
       type: Number,
       default: 0,
     },

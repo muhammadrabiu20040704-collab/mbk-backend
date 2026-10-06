@@ -3,8 +3,7 @@ import { UserRole } from "../users/user.enums.js";
 
 export interface ProfileStats {
   postsCount: number;
-  followersCount: number;
-  followingCount: number;
+  connectionsCount: number;
   presentationsCount: number;
   debatesCount: number;
   coins: number;

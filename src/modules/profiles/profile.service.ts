@@ -8,7 +8,7 @@ export class ProfileService {
       username: username.toLowerCase(),
       isActive: true,
     }).select(
-      "fullName username country profilePicture coverPhoto bio school department level isVerified postsCount followersCount followingCount presentationsCount debatesCount coins createdAt",
+      "fullName username country profilePicture coverPhoto bio school department level isVerified postsCount connectionsCount presentationsCount debatesCount coins createdAt",
     );
 
     if (!user) {
@@ -30,8 +30,7 @@ export class ProfileService {
 
       stats: {
         postsCount: user.postsCount,
-        followersCount: user.followersCount,
-        followingCount: user.followingCount,
+        connectionsCount: user.connectionsCount,
         presentationsCount: user.presentationsCount,
         debatesCount: user.debatesCount,
         coins: user.coins,
@@ -46,7 +45,7 @@ export class ProfileService {
       _id: userId,
       isActive: true,
     }).select(
-      "fullName username country profilePicture coverPhoto bio school department level isVerified postsCount followersCount followingCount presentationsCount debatesCount coins createdAt phoneNumberVerified interests role isActive",
+      "fullName username country profilePicture coverPhoto bio school department level isVerified postsCount connectionsCount presentationsCount debatesCount coins createdAt phoneNumberVerified interests role isActive",
     );
 
     if (!user) {
@@ -68,8 +67,7 @@ export class ProfileService {
 
       stats: {
         postsCount: user.postsCount,
-        followersCount: user.followersCount,
-        followingCount: user.followingCount,
+        connectionsCount: user.connectionsCount,
         presentationsCount: user.presentationsCount,
         debatesCount: user.debatesCount,
         coins: user.coins,
@@ -93,7 +91,6 @@ export class ProfileService {
       throw new AppError("User not found", 404);
     }
 
-    // Check username uniqueness only when username is being changed
     if (input.username && input.username !== user.username) {
       const existingUser = await User.findOne({
         username: input.username.toLowerCase(),
