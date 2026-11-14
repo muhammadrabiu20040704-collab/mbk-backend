@@ -1,6 +1,7 @@
 import multer from "multer";
 import type { FileFilterCallback } from "multer";
 import type { Request } from "express";
+import { MEDIA_LIMITS } from "./media.constants.js";
 
 const storage = multer.memoryStorage();
 
@@ -29,6 +30,15 @@ export const messageMediaUpload = multer({
   storage,
   limits: {
     fileSize: 100 * 1024 * 1024,
+    files: 1,
+  },
+});
+
+export const presentationCoverUpload = multer({
+  storage,
+  fileFilter: imageFileFilter,
+  limits: {
+    fileSize: MEDIA_LIMITS.COVER_PHOTO_MAX_SIZE,
     files: 1,
   },
 });

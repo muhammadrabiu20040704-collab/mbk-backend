@@ -120,9 +120,9 @@ List endpoints support a "limit" query parameter. The default is 20, and the max
 Successful responses use a consistent JSON structure:
 
 {
-  "success": true,
-  "message": "Operation completed successfully.",
-  "data": {}
+"success": true,
+"message": "Operation completed successfully.",
+"data": {}
 }
 
 The actual value of "data" depends on the endpoint.

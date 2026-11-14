@@ -13,6 +13,7 @@ import userRouter from "@modules/users/user.routes.js";
 import walletRouter from "@modules/wallet/wallet.routes.js";
 import messageRouter from "@modules/messages/messages.routes.js";
 import connectionRouter from "@modules/network/connections/connection.routes.js";
+import presentationRouter from "@modules/presentations/presentation.routes.js";
 
 import { env } from "./config/env.js";
 
@@ -66,6 +67,7 @@ app.use(`${API_PREFIX}/users`, userRouter);
 app.use(`${API_PREFIX}/wallet`, walletRouter);
 app.use(`${API_PREFIX}/messages`, messageRouter);
 app.use(`${API_PREFIX}/connections`, connectionRouter);
+app.use(`${API_PREFIX}/presentations`, presentationRouter);
 
 // ===============================
 // NOT FOUND
