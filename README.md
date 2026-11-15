@@ -255,28 +255,28 @@ The administration system is intended to support:
 
 MBK uses TypeScript across its planned frontend and backend to improve consistency and maintainability.
 
-| Technology | Purpose |
-|---|---|
-| React Native | Cross-platform mobile application |
-| TypeScript | Static typing and maintainable code |
-| Node.js | Backend JavaScript runtime |
-| Express | HTTP API framework |
-| MongoDB | Primary document database |
-| Mongoose | MongoDB schemas, models, and queries |
-| Socket.IO | Planned real-time messaging and events |
-| Redis | Planned caching and shared real-time state |
-| Cloudinary | Image and video storage |
-| Multer | Multipart file upload handling |
-| JSON Web Tokens | Authentication tokens |
-| bcrypt | Password hashing |
-| Helmet | HTTP security headers |
-| CORS | Cross-origin access configuration |
-| Morgan | HTTP request logging |
-| RabbitMQ | Planned asynchronous messaging |
-| Nginx | Planned reverse proxy and load balancing |
-| Docker | Planned containerization |
-| ESLint | Code quality and linting |
-| Prettier | Code formatting |
+| Technology      | Purpose                                    |
+| --------------- | ------------------------------------------ |
+| React Native    | Cross-platform mobile application          |
+| TypeScript      | Static typing and maintainable code        |
+| Node.js         | Backend JavaScript runtime                 |
+| Express         | HTTP API framework                         |
+| MongoDB         | Primary document database                  |
+| Mongoose        | MongoDB schemas, models, and queries       |
+| Socket.IO       | Planned real-time messaging and events     |
+| Redis           | Planned caching and shared real-time state |
+| Cloudinary      | Image and video storage                    |
+| Multer          | Multipart file upload handling             |
+| JSON Web Tokens | Authentication tokens                      |
+| bcrypt          | Password hashing                           |
+| Helmet          | HTTP security headers                      |
+| CORS            | Cross-origin access configuration          |
+| Morgan          | HTTP request logging                       |
+| RabbitMQ        | Planned asynchronous messaging             |
+| Nginx           | Planned reverse proxy and load balancing   |
+| Docker          | Planned containerization                   |
+| ESLint          | Code quality and linting                   |
+| Prettier        | Code formatting                            |
 
 **Important:** A technology being listed here does not mean every integration is already operational. Implementation status is tracked separately in the development roadmap.
 
@@ -630,20 +630,20 @@ MongoDB is the primary database, with Mongoose providing schema definitions and 
 
 ### Planned core entities
 
-| Entity | Purpose |
-|---|---|
-| User | Student and administrator accounts |
-| Session | Authentication sessions |
+| Entity       | Purpose                             |
+| ------------ | ----------------------------------- |
+| User         | Student and administrator accounts  |
+| Session      | Authentication sessions             |
 | Conversation | Messaging participants and metadata |
-| Message | Message content, sender, and status |
-| Post | Student-created content |
-| Comment | Responses to posts |
-| Follow | Relationships between students |
-| Notification | User notifications |
-| Debate | Debate proposals and sessions |
-| Presentation | Presentation activities |
-| Report | Moderation reports |
-| Audit Record | Relevant administrative activity |
+| Message      | Message content, sender, and status |
+| Post         | Student-created content             |
+| Comment      | Responses to posts                  |
+| Follow       | Relationships between students      |
+| Notification | User notifications                  |
+| Debate       | Debate proposals and sessions       |
+| Presentation | Presentation activities             |
+| Report       | Moderation reports                  |
+| Audit Record | Relevant administrative activity    |
 
 Not all entities have been implemented.
 
@@ -836,21 +836,21 @@ The following is an overview of the current messaging route design, not a comple
 
 ### Conversations
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/conversations` | Create or retrieve a direct conversation |
-| GET | `/conversations` | Retrieve the authenticated user's conversations |
-| GET | `/conversations/:conversationId` | Retrieve an authorized conversation |
+| Method | Endpoint                         | Purpose                                         |
+| ------ | -------------------------------- | ----------------------------------------------- |
+| POST   | `/conversations`                 | Create or retrieve a direct conversation        |
+| GET    | `/conversations`                 | Retrieve the authenticated user's conversations |
+| GET    | `/conversations/:conversationId` | Retrieve an authorized conversation             |
 
 ### Messages
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/conversations/:conversationId/messages` | Send a text message |
-| GET | `/conversations/:conversationId/messages` | Retrieve paginated messages |
-| PATCH | `/:messageId/delivered` | Mark a message as delivered |
-| PATCH | `/:messageId/read` | Mark a message as read |
-| DELETE | `/:messageId` | Delete the authenticated sender's message |
+| Method | Endpoint                                  | Purpose                                   |
+| ------ | ----------------------------------------- | ----------------------------------------- |
+| POST   | `/conversations/:conversationId/messages` | Send a text message                       |
+| GET    | `/conversations/:conversationId/messages` | Retrieve paginated messages               |
+| PATCH  | `/:messageId/delivered`                   | Mark a message as delivered               |
+| PATCH  | `/:messageId/read`                        | Mark a message as read                    |
+| DELETE | `/:messageId`                             | Delete the authenticated sender's message |
 
 These paths are relative to the parent prefix at which the Messages router is mounted.
 
@@ -949,24 +949,24 @@ The long-term ambition is to support a large student community. Any specific cap
 
 Development is organized into incremental phases. Statuses below distinguish the existing foundation from planned integrations.
 
-| Phase | Focus | Status |
-|---|---|---|
-| 1 | Product planning and feature definition | Completed |
-| 2 | System design and architecture | Completed |
-| 3 | Authentication and security foundation | Implemented foundation |
-| 4 | Messages domain, models, repositories, and REST workflows | In progress |
-| 5 | Messaging media integration | Integration and verification pending |
-| 6 | Socket.IO real-time messaging | Planned |
-| 7 | Redis integration and shared real-time state | Planned |
-| 8 | Messaging security hardening and tests | Planned / ongoing |
-| 9 | Student network | Planned |
-| 10 | Posts and social feed | Planned |
-| 11 | Presentation module | Planned |
-| 12 | Debate module and approval workflows | Planned |
-| 13 | Notifications | Planned |
-| 14 | Recommendation system and AI assistant | Planned |
-| 15 | Admin tools and moderation | Planned |
-| 16 | Deployment, monitoring, and performance testing | Planned |
+| Phase | Focus                                                     | Status                               |
+| ----- | --------------------------------------------------------- | ------------------------------------ |
+| 1     | Product planning and feature definition                   | Completed                            |
+| 2     | System design and architecture                            | Completed                            |
+| 3     | Authentication and security foundation                    | Implemented foundation               |
+| 4     | Messages domain, models, repositories, and REST workflows | In progress                          |
+| 5     | Messaging media integration                               | Integration and verification pending |
+| 6     | Socket.IO real-time messaging                             | Planned                              |
+| 7     | Redis integration and shared real-time state              | Planned                              |
+| 8     | Messaging security hardening and tests                    | Planned / ongoing                    |
+| 9     | Student network                                           | Planned                              |
+| 10    | Posts and social feed                                     | Planned                              |
+| 11    | Presentation module                                       | Planned                              |
+| 12    | Debate module and approval workflows                      | Planned                              |
+| 13    | Notifications                                             | Planned                              |
+| 14    | Recommendation system and AI assistant                    | Planned                              |
+| 15    | Admin tools and moderation                                | Planned                              |
+| 16    | Deployment, monitoring, and performance testing           | Planned                              |
 
 The roadmap may change as implementation, testing, and product requirements reveal new priorities.
 

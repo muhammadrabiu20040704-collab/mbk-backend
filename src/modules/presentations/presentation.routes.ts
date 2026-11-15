@@ -18,4 +18,9 @@ router.get("/my", presentationController.getMyPresentations.bind(presentationCon
 
 router.get("/:presentationId", presentationController.getById.bind(presentationController));
 
+router.patch(
+  "/:presentationId",
+  presentationCoverUpload.single("coverImage"),
+  presentationController.update.bind(presentationController),
+);
 export default router;

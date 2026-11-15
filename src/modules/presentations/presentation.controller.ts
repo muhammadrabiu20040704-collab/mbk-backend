@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import { Types } from "mongoose";
-
 import { AppError } from "@utils/app-error.js";
 import { presentationService } from "./presentation.service.js";
 
@@ -52,6 +51,27 @@ export class PresentationController {
       success: true,
       message: "Your presentations retrieved successfully.",
       data: presentations,
+    });
+  }
+
+  async update(req: Request, res: Response) {
+    const presenterId = getCurrentUserId(req);
+    const presentationId = req.params.presentationId;
+
+    if (typeof presentationId !== "string" || !presentationId) {
+      throw new AppError("A valid presentation ID is required", 400);
+    }
+
+    const presentation = await presentationService.update(
+      presenterId,
+      presentationId,
+      req.body,
+      req.file,
+    );
+    return res.status(200).json({
+      success: true,
+      message: "Presentation updated successfully.",
+      data: presentation,
     });
   }
 }
