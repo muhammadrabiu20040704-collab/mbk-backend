@@ -13,6 +13,7 @@ export enum PresentationStatus {
 export enum PresentationVisibility {
   PUBLIC = "public",
   CONNECTIONS = "connections",
+  PRIVATE = "private",
 }
 
 export enum RecordingPreference {

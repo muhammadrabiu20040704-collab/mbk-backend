@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import { Types } from "mongoose";
 import { AppError } from "@utils/app-error.js";
 import { presentationService } from "./presentation.service.js";
+import type { PresentationListFilters } from "./presentation.types.js";
+import { PresentationType } from "./presentation.enums.js";
 
 function getCurrentUserId(req: Request): Types.ObjectId {
   const userId = req.user?.sub;
@@ -27,13 +29,18 @@ export class PresentationController {
   }
 
   async getById(req: Request, res: Response) {
+    // 1. Get the authenticated user ID
+    const viewerId = getCurrentUserId(req);
+
+    // 2. Get presentation ID
     const presentationId = req.params.presentationId;
 
     if (typeof presentationId !== "string" || !presentationId) {
       throw new AppError("A valid presentation ID is required.", 400);
     }
 
-    const presentation = await presentationService.findById(presentationId);
+    // 3. Retrieve presentation with authorization
+    const presentation = await presentationService.findById(presentationId, viewerId);
 
     return res.status(200).json({
       success: true,
@@ -72,6 +79,51 @@ export class PresentationController {
       success: true,
       message: "Presentation updated successfully.",
       data: presentation,
+    });
+  }
+
+  async list(req: Request, res: Response) {
+    const { page, limit, type, category, search } = req.query;
+
+    // Validate query parameter types
+    if (
+      (page !== undefined && typeof page !== "string") ||
+      (limit !== undefined && typeof limit !== "string") ||
+      (type !== undefined && typeof type !== "string") ||
+      (category !== undefined && typeof category !== "string") ||
+      (search !== undefined && typeof search !== "string")
+    ) {
+      throw new AppError("Invalid query parameters.", 400);
+    }
+
+    const pageNumber = page === undefined ? 1 : Number(page);
+    const limitNumber = limit === undefined ? 10 : Number(limit);
+
+    if (
+      !Number.isInteger(pageNumber) ||
+      pageNumber < 1 ||
+      !Number.isInteger(limitNumber) ||
+      limitNumber < 1
+    ) {
+      throw new AppError("Page and limit must be positive integers.", 400);
+    }
+
+    if (type !== undefined && !Object.values(PresentationType).includes(type as PresentationType)) {
+      throw new AppError("Invalid presentation type.", 400);
+    }
+
+    const filters: PresentationListFilters = {
+      ...(type && { presentationType: type as PresentationType }),
+      ...(category?.trim() && { category: category.trim() }),
+      ...(search?.trim() && { search: search.trim() }),
+    };
+
+    const result = await presentationService.listPublic(filters, pageNumber, limitNumber);
+
+    return res.status(200).json({
+      success: true,
+      message: "Presentations retrieved successfully.",
+      data: result,
     });
   }
 }

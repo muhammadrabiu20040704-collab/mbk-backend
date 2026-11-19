@@ -122,6 +122,20 @@ export class ConnectionRepository {
       { session },
     ).exec();
   }
+
+  async areUsersConnected(
+    firstUserId: Types.ObjectId,
+    secondUserId: Types.ObjectId,
+  ): Promise<boolean> {
+    const participantKey = [firstUserId.toString(), secondUserId.toString()].sort().join(":");
+
+    const connection = await Connection.exists({
+      participantKey,
+      status: ConnectionStatus.ACCEPTED,
+    });
+
+    return connection !== null;
+  }
 }
 
 export const connectionRepository = new ConnectionRepository();

@@ -1,7 +1,11 @@
 import { Types } from "mongoose";
 import { AppError } from "@utils/app-error.js";
 import { presentationRepository } from "./presentation.repository.js";
-import type { IPresentation } from "./presentation.types.js";
+import type {
+  IPresentation,
+  PresentationListFilters,
+  UpdatePresentationInput,
+} from "./presentation.types.js";
 import {
   PresentationStatus,
   PresentationType,
@@ -12,6 +16,7 @@ import { mediaService } from "../../shared/media/media.service.js";
 import { MEDIA_FOLDERS } from "../../shared/media/media.constants.js";
 import { validatePresentationCover } from "./presentation-cover.validation.js";
 import type { UploadedMedia } from "../../shared/media/media.types.js";
+import { connectionRepository } from "../network/connections/connection.repository.js";
 
 export class PresentationService {
   async create(
@@ -43,40 +48,60 @@ export class PresentationService {
       throw new AppError("Presentation type is required.", 400);
     }
 
-    if (
-      data.presentationType === PresentationType.LIVE &&
-      data.scheduledAt &&
-      new Date(data.scheduledAt).getTime() < Date.now()
-    ) {
-      throw new AppError("Presentation cannot be scheduled in the past.", 400);
+    if (!Object.values(PresentationType).includes(data.presentationType)) {
+      throw new AppError("Invalid presentation type.", 400);
     }
+
+    let scheduledAt: Date | undefined;
 
     if (data.presentationType === PresentationType.RECORDED && data.scheduledAt) {
       throw new AppError("Recorded presentations cannot have a scheduled live start time.", 400);
     }
 
+    if (data.presentationType === PresentationType.LIVE && data.scheduledAt) {
+      scheduledAt = new Date(data.scheduledAt);
+
+      if (Number.isNaN(scheduledAt.getTime())) {
+        throw new AppError("Invalid scheduled date.", 400);
+      }
+
+      if (scheduledAt.getTime() < Date.now()) {
+        throw new AppError("Presentation cannot be scheduled in the past.", 400);
+      }
+    }
+
+    const visibility = data.visibility ?? PresentationVisibility.PUBLIC;
+
+    if (!Object.values(PresentationVisibility).includes(visibility)) {
+      throw new AppError("Invalid presentation visibility.", 400);
+    }
+
+    const recordingPreference = data.recordingPreference ?? RecordingPreference.NONE;
+
+    if (!Object.values(RecordingPreference).includes(recordingPreference)) {
+      throw new AppError("Invalid recording preference.", 400);
+    }
+
     const presentationData: Partial<IPresentation> = {
-      ...data,
       presenterId,
       title: data.title.trim(),
       description: data.description.trim(),
       category: data.category.trim(),
       topic: data.topic.trim(),
+      presentationType: data.presentationType,
+      visibility,
       status:
         data.presentationType === PresentationType.RECORDED
           ? PresentationStatus.PUBLISHED
-          : data.scheduledAt
+          : scheduledAt
             ? PresentationStatus.SCHEDULED
             : PresentationStatus.DRAFT,
       recordingPreference:
         data.presentationType === PresentationType.RECORDED
           ? RecordingPreference.NONE
-          : (data.recordingPreference ?? RecordingPreference.NONE),
+          : recordingPreference,
+      ...(scheduledAt && { scheduledAt }),
     };
-
-    if (data.presentationType === PresentationType.RECORDED) {
-      presentationData.visibility = "public" as IPresentation["visibility"];
-    }
 
     let uploadedCover: UploadedMedia | undefined;
 
@@ -101,18 +126,57 @@ export class PresentationService {
     }
   }
 
-  async findById(presentationId: string) {
-    if (!Types.ObjectId.isValid(presentationId)) {
-      throw new AppError("Invalid presentation ID.", 400);
+  async findById(presentationId: string, viewerId: Types.ObjectId) {
+    // 1. Validate IDs
+    if (!Types.ObjectId.isValid(presentationId) || !Types.ObjectId.isValid(viewerId)) {
+      throw new AppError("Invalid ID.", 400);
     }
 
+    // 2. Find presentation
     const presentation = await presentationRepository.findById(new Types.ObjectId(presentationId));
 
     if (!presentation) {
       throw new AppError("Presentation not found.", 404);
     }
 
-    return presentation;
+    // 3. Check presentation owner
+    const isOwner = presentation.presenterId.equals(viewerId);
+
+    if (isOwner) {
+      return presentation;
+    }
+
+    // 4. Other users cannot view drafts or cancelled presentations
+    if (
+      presentation.status === PresentationStatus.DRAFT ||
+      presentation.status === PresentationStatus.CANCELLED
+    ) {
+      throw new AppError("Presentation not found.", 404);
+    }
+
+    // 5. Private presentations are only visible to their owner
+    if (presentation.visibility === PresentationVisibility.PRIVATE) {
+      throw new AppError("Presentation not found.", 404);
+    }
+
+    // 6. Public presentations are visible to authenticated users
+    if (presentation.visibility === PresentationVisibility.PUBLIC) {
+      return presentation;
+    }
+
+    // 7. Check accepted connection for CONNECTIONS presentations
+    if (presentation.visibility === PresentationVisibility.CONNECTIONS) {
+      const isConnected = await connectionRepository.areUsersConnected(
+        viewerId,
+        presentation.presenterId,
+      );
+
+      if (isConnected) {
+        return presentation;
+      }
+    }
+
+    throw new AppError("Presentation not found.", 404);
   }
 
   async findByPresenter(presenterId: string) {
@@ -132,7 +196,7 @@ export class PresentationService {
   async update(
     presenterId: Types.ObjectId,
     presentationId: string,
-    data: Partial<IPresentation>,
+    data: UpdatePresentationInput,
     coverFile?: Express.Multer.File,
   ) {
     // 1. Validate IDs
@@ -165,7 +229,7 @@ export class PresentationService {
     }
 
     // 5. Prepare only allowed fields
-    const updates: Partial<IPresentation> = {};
+    const updates: UpdatePresentationInput = {};
 
     if (data.title !== undefined) {
       if (!data.title.trim()) {
@@ -227,17 +291,23 @@ export class PresentationService {
         throw new AppError("Recorded presentations cannot have a scheduled start time.", 400);
       }
 
-      const scheduledAt = new Date(data.scheduledAt);
+      if (data.scheduledAt === null) {
+        updates.scheduledAt = null;
+        updates.status = PresentationStatus.DRAFT;
+      } else {
+        const scheduledAt = new Date(data.scheduledAt);
 
-      if (Number.isNaN(scheduledAt.getTime())) {
-        throw new AppError("Invalid scheduled date.", 400);
+        if (Number.isNaN(scheduledAt.getTime())) {
+          throw new AppError("Invalid scheduled date.", 400);
+        }
+
+        if (scheduledAt.getTime() <= Date.now()) {
+          throw new AppError("Presentation cannot be scheduled in the past.", 400);
+        }
+
+        updates.scheduledAt = scheduledAt;
+        updates.status = PresentationStatus.SCHEDULED;
       }
-
-      if (scheduledAt.getTime() < Date.now()) {
-        throw new AppError("Presentation cannot be scheduled in the past.", 400);
-      }
-
-      updates.scheduledAt = scheduledAt;
     }
 
     if (data.durationMinutes !== undefined) {
@@ -250,11 +320,6 @@ export class PresentationService {
       }
 
       updates.durationMinutes = data.durationMinutes;
-    }
-
-    // 6. Keep recorded presentations public
-    if (existing.presentationType === PresentationType.RECORDED) {
-      updates.visibility = PresentationVisibility.PUBLIC;
     }
 
     // 7. Reject empty update
@@ -302,6 +367,27 @@ export class PresentationService {
 
       throw error;
     }
+  }
+
+  async listPublic(filters: PresentationListFilters, page: number, limit: number) {
+    const safePage = Number.isInteger(page) && page > 0 ? page : 1;
+
+    const safeLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 50) : 10;
+
+    const queryFilters: PresentationListFilters = {
+      ...filters,
+      visibility: PresentationVisibility.PUBLIC,
+    };
+
+    // Public listing must never expose drafts or cancelled presentations.
+    if (filters.presentationType === PresentationType.LIVE) {
+      queryFilters.status = PresentationStatus.SCHEDULED;
+      queryFilters.scheduledAfter = new Date();
+    } else {
+      queryFilters.status = PresentationStatus.PUBLISHED;
+    }
+
+    return presentationRepository.findMany(queryFilters, safePage, safeLimit);
   }
 }
 

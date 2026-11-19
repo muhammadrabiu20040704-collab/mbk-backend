@@ -6,7 +6,8 @@ import type {
   PresentationVisibility,
   RecordingPreference,
 } from "./presentation.enums.js";
-import { UploadedMedia } from "shared/media/media.types.js";
+
+import type { UploadedMedia } from "shared/media/media.types.js";
 
 export interface IPresentation {
   presenterId: Types.ObjectId;
@@ -30,3 +31,17 @@ export interface IPresentation {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface PresentationListFilters {
+  visibility?: PresentationVisibility;
+  status?: PresentationStatus;
+  presentationType?: PresentationType;
+
+  category?: string;
+  search?: string;
+  scheduledAfter?: Date;
+}
+
+export type UpdatePresentationInput = Omit<Partial<IPresentation>, "scheduledAt"> & {
+  scheduledAt?: Date | string | null;
+};

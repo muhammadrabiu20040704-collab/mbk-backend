@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 
 import type { IPresentation } from "./presentation.types.js";
+
 import {
   PresentationStatus,
   PresentationType,
@@ -8,13 +9,59 @@ import {
   RecordingPreference,
 } from "./presentation.enums.js";
 
+// Uploaded media schema
+const uploadedMediaSchema = new Schema(
+  {
+    url: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    publicId: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    resourceType: {
+      type: String,
+      required: true,
+      enum: ["image"],
+    },
+
+    width: {
+      type: Number,
+      min: 1,
+    },
+
+    height: {
+      type: Number,
+      min: 1,
+    },
+
+    format: {
+      type: String,
+      trim: true,
+    },
+
+    bytes: {
+      type: Number,
+      min: 0,
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
+// Presentation schema
 const presentationSchema = new Schema<IPresentation>(
   {
     presenterId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
 
     title: {
@@ -47,40 +94,8 @@ const presentationSchema = new Schema<IPresentation>(
     },
 
     coverImage: {
-      url: {
-        type: String,
-        trim: true,
-      },
-
-      publicId: {
-        type: String,
-        trim: true,
-      },
-
-      resourceType: {
-        type: String,
-        enum: ["image", "video"],
-      },
-
-      width: {
-        type: Number,
-        min: 1,
-      },
-
-      height: {
-        type: Number,
-        min: 1,
-      },
-
-      format: {
-        type: String,
-        trim: true,
-      },
-
-      bytes: {
-        type: Number,
-        min: 0,
-      },
+      type: uploadedMediaSchema,
+      default: undefined,
     },
 
     presentationType: {
@@ -94,7 +109,6 @@ const presentationSchema = new Schema<IPresentation>(
       enum: Object.values(PresentationStatus),
       required: true,
       default: PresentationStatus.DRAFT,
-      index: true,
     },
 
     visibility: {
@@ -114,7 +128,6 @@ const presentationSchema = new Schema<IPresentation>(
     scheduledAt: {
       type: Date,
       default: undefined,
-      index: true,
     },
 
     durationMinutes: {
@@ -130,4 +143,34 @@ const presentationSchema = new Schema<IPresentation>(
   },
 );
 
+// Presenter presentations, sorted by creation date
+presentationSchema.index({
+  presenterId: 1,
+  createdAt: -1,
+});
+
+// Public presentation feed
+presentationSchema.index({
+  visibility: 1,
+  status: 1,
+  createdAt: -1,
+});
+
+// Upcoming live presentations
+presentationSchema.index({
+  visibility: 1,
+  presentationType: 1,
+  status: 1,
+  scheduledAt: 1,
+});
+
+// Category-based presentation listing
+presentationSchema.index({
+  visibility: 1,
+  status: 1,
+  category: 1,
+  createdAt: -1,
+});
+
+// Export Presentation model
 export const Presentation = model<IPresentation>("Presentation", presentationSchema);

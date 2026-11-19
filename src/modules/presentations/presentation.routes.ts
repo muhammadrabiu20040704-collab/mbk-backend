@@ -14,6 +14,8 @@ router.post(
   presentationController.create.bind(presentationController),
 );
 
+router.get("/", presentationController.list.bind(presentationController));
+
 router.get("/my", presentationController.getMyPresentations.bind(presentationController));
 
 router.get("/:presentationId", presentationController.getById.bind(presentationController));
